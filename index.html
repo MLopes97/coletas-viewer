@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Torre de Controle de Coletas</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>Torre de Controle de Coletas</h1>
+<p>Planejamento Inbound</p>
+
+</header>
+
+<section class="upload-box">
+
+<input type="file"
+       id="fileInput"
+       accept=".xlsx,.xls">
+
+</section>
+
+<section class="dashboard">
+
+<div class="card">
+<h3>Total Coletas</h3>
+<span id="totalShipments">0</span>
+</div>
+
+<div class="card">
+<h3>Valor Total</h3>
+<span id="totalCost">0</span>
+</div>
+
+<div class="card">
+    <h3>Transportadoras</h3>
+    <span id="totalCarriers">0</span>
+</div>
+
+</section>
+
+<section class="toolbar">
+
+<input
+type="text"
+id="searchInput"
+placeholder="Pesquisar Shipment">
+
+<select id="statusFilter">
+<option value="">Todos Status</option>
+</select>
+
+<select id="providerFilter">
+<option value="">Todas Transportadoras</option>
+</select>
+
+<select id="sourceFilter">
+<option value="">Todas Origens</option>
+</select>
+
+<select id="destinationFilter">
+<option value="">Todos Destinos</option>
+</select>
+
+<input
+type="date"
+id="dateStart">
+
+<input
+type="date"
+id="dateEnd">
+
+<button id="configColumns">
+Selecionar Colunas
+</button>
+
+</section>
+
+
+<div id="columnSelector"></div>
+
+<section class="table-container">
+
+<table id="shipmentTable">
+
+<thead></thead>
+
+<tbody></tbody>
+
+</table>
+
+</section>
+
+<script src="app.js"></script>
+
+</body>
+
+</html>
