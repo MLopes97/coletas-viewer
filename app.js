@@ -71,6 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
+    // Se a aba foi recarregada pelo Chrome (economia de memória) ou o
+    // usuário voltou depois de um tempo, tenta restaurar os dados do
+    // último Excel carregado nesta mesma aba, sem precisar escolher o
+    // arquivo de novo.
+    restoreFromSession();
+
 });
 
 function loadExcel(event) {
@@ -99,7 +105,7 @@ function loadExcel(event) {
 
             excelData =
                 XLSX.utils.sheet_to_json(sheet);
-                
+
             if(
                 !validateFileStructure()
             ){
@@ -132,6 +138,8 @@ function loadExcel(event) {
             initializeColumns();
 
             renderTable();
+
+            saveToSession(file.name);
 
         }
         catch (error) {
@@ -574,6 +582,96 @@ function updateCards(data) {
 
 }
 
+// Guarda o Excel já carregado nesta aba (sessionStorage dura enquanto a
+// aba estiver aberta e sobrevive a um reload automático do Chrome, mas
+// some sozinho quando a aba é fechada — não fica dado da empresa salvo
+// indefinidamente no navegador).
+function saveToSession(fileName) {
+
+    try {
+
+        sessionStorage.setItem(
+            "excelData",
+            JSON.stringify(excelData)
+        );
+
+        sessionStorage.setItem(
+            "excelFileName",
+            fileName || ""
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Não foi possível salvar os dados na sessão.",
+            error
+        );
+
+    }
+
+}
+
+// Roda ao abrir/recarregar a página. Se houver dados salvos desta mesma
+// aba, restaura a tabela automaticamente sem pedir pra escolher o
+// arquivo de novo.
+function restoreFromSession() {
+
+    try {
+
+        const saved =
+            sessionStorage.getItem("excelData");
+
+        if (!saved) return;
+
+        const parsed =
+            JSON.parse(saved);
+
+        if (
+            !Array.isArray(parsed) ||
+            parsed.length === 0
+        ) {
+            return;
+        }
+
+        excelData = parsed;
+
+        const fileName =
+            sessionStorage.getItem(
+                "excelFileName"
+            );
+
+        if (fileName) {
+
+            const hint =
+                document.createElement("span");
+
+            hint.textContent =
+                ` ${fileName} (restaurado automaticamente)`;
+
+            document
+                .getElementById("fileInput")
+                .insertAdjacentElement(
+                    "afterend",
+                    hint
+                );
+
+        }
+
+        initializeColumns();
+
+        renderTable();
+
+    } catch (error) {
+
+        console.warn(
+            "Não foi possível restaurar os dados da sessão.",
+            error
+        );
+
+    }
+
+}
+
 function renderTable() {
 
     if (excelData.length === 0)
@@ -745,44 +843,44 @@ function renderTable() {
 
     thead.innerHTML = header;
 
+    // Monta todas as linhas UMA única vez (antes havia um forEach duplicado
+    // que reconstruía a tabela inteira a cada linha, O(n²) desnecessário).
+    let rowsHtml = "";
 
-
-   let rowsHtml = "";
- 
     filteredData.forEach(row => {
- 
+
         let html = "<tr>";
- 
+
         selectedColumns.forEach(column => {
- 
+
             let value =
                 row[column];
- 
+
             if (
                 column.includes("Time")
             ) {
- 
+
                 value =
                     formatExcelDateTime(
                         value
                     );
- 
+
             }
- 
+
             html += `
                 <td>
                     ${value ?? ""}
                 </td>
             `;
- 
+
         });
- 
+
         html += "</tr>";
- 
+
         rowsHtml += html;
- 
+
     });
- 
+
     tbody.innerHTML = rowsHtml;
- 
+
 }
